@@ -8,7 +8,8 @@ class SalesScreen extends StatefulWidget {
   _SalesScreenState createState() => _SalesScreenState();
 }
 
-class _SalesScreenState extends State<SalesScreen> with SingleTickerProviderStateMixin {
+class _SalesScreenState extends State<SalesScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _apiService = ApiService();
   String _filter = 'Todos';
@@ -24,12 +25,18 @@ class _SalesScreenState extends State<SalesScreen> with SingleTickerProviderStat
     return Scaffold(
       appBar: AppBar(
         title: Text('Módulo de Ventas'),
-        bottom: TabBar(controller: _tabController, tabs: [Tab(text: 'Pedidos'), Tab(text: 'Clientes')]),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: [
+            Tab(text: 'Pedidos'),
+            Tab(text: 'Clientes'),
+          ],
+        ),
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
-          // Pestaña Pedidos
+          //pestania de pedidos
           Column(
             children: [
               Padding(
@@ -37,7 +44,9 @@ class _SalesScreenState extends State<SalesScreen> with SingleTickerProviderStat
                 child: DropdownButton<String>(
                   value: _filter,
                   isExpanded: true,
-                  items: ['Todos', 'pendiente', 'completado', 'cancelado'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                  items: ['Todos', 'pendiente', 'completado', 'cancelado']
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
                   onChanged: (val) => setState(() => _filter = val!),
                 ),
               ),
@@ -45,12 +54,19 @@ class _SalesScreenState extends State<SalesScreen> with SingleTickerProviderStat
                 child: FutureBuilder<List<Pedido>>(
                   future: _apiService.getVentas(),
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) return Center(child: CircularProgressIndicator());
-                    if (snapshot.hasError) return Center(child: Text('Error: ${snapshot.error}'));
-                    
+                    if (snapshot.connectionState == ConnectionState.waiting)
+                      return Center(child: CircularProgressIndicator());
+                    if (snapshot.hasError)
+                      return Center(child: Text('Error: ${snapshot.error}'));
+
                     var pedidos = snapshot.data!;
                     if (_filter != 'Todos') {
-                      pedidos = pedidos.where((p) => p.estado.toLowerCase() == _filter.toLowerCase()).toList();
+                      pedidos = pedidos
+                          .where(
+                            (p) =>
+                                p.estado.toLowerCase() == _filter.toLowerCase(),
+                          )
+                          .toList();
                     }
 
                     return ListView.builder(
@@ -60,14 +76,33 @@ class _SalesScreenState extends State<SalesScreen> with SingleTickerProviderStat
                         return Card(
                           margin: EdgeInsets.all(8),
                           child: ListTile(
-                            title: Text('${p.numeroPedido} - ${p.clienteNombre}'),
-                            subtitle: Text(DateFormat.yMMMd().format(DateTime.parse(p.fecha))),
+                            title: Text(
+                              '${p.numeroPedido} - ${p.clienteNombre}',
+                            ),
+                            subtitle: Text(
+                              DateFormat.yMMMd().format(
+                                DateTime.parse(p.fecha),
+                              ),
+                            ),
                             trailing: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text('Q${p.total.toStringAsFixed(2)}', style: TextStyle(fontWeight: FontWeight.bold)),
-                                Text(p.estado, style: TextStyle(color: p.estado == 'completado' ? Colors.green : Colors.orange)),
+                                Text(
+                                  'Q${p.total.toStringAsFixed(2)}',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  p.estado,
+                                  style: TextStyle(
+                                    color:
+                                        p.estado.toLowerCase() == 'completado'
+                                        ? Colors.green
+                                        : p.estado.toLowerCase() == 'cancelado'
+                                        ? Colors.red
+                                        : Colors.orange,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -79,11 +114,12 @@ class _SalesScreenState extends State<SalesScreen> with SingleTickerProviderStat
               ),
             ],
           ),
-          // Pestaña Clientes
+          //pestania de clientes
           FutureBuilder<List<Cliente>>(
             future: _apiService.getClientes(),
             builder: (context, snapshot) {
-              if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
+              if (!snapshot.hasData)
+                return Center(child: CircularProgressIndicator());
               return ListView.builder(
                 itemCount: snapshot.data!.length,
                 itemBuilder: (ctx, i) {

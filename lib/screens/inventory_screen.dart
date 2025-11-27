@@ -1,4 +1,3 @@
-// lib/screens/inventory_screen.dart
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/models.dart';
@@ -15,8 +14,7 @@ class _InventoryScreenState extends State<InventoryScreen> with SingleTickerProv
   @override
   void initState() {
     super.initState();
-    // Inicializamos el controlador para las 2 pestañas
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this); //inicializar para 3 pestanias
   }
 
   @override
@@ -35,23 +33,22 @@ class _InventoryScreenState extends State<InventoryScreen> with SingleTickerProv
           tabs: [
             Tab(icon: Icon(Icons.store), text: 'Existencias'),
             Tab(icon: Icon(Icons.history_edu), text: 'Movimientos'),
+            Tab(icon: Icon(Icons.category), text: 'Categorías'),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
-          // --- PESTAÑA 1: PRODUCTOS (Existencias) ---
+          //pestanias
           _buildProductosTab(),
-
-          // --- PESTAÑA 2: MOVIMIENTOS (Entradas/Salidas) ---
           _buildMovimientosTab(),
+          _buildCategoriasTab(),
         ],
       ),
     );
   }
 
-  // Widget auxiliar para la lista de Productos
   Widget _buildProductosTab() {
     return FutureBuilder<List<Producto>>(
       future: _apiService.getProductos(),
@@ -104,7 +101,6 @@ class _InventoryScreenState extends State<InventoryScreen> with SingleTickerProv
     );
   }
 
-  // Widget auxiliar para la lista de Movimientos
   Widget _buildMovimientosTab() {
     return FutureBuilder<List<MovimientoInventario>>(
       future: _apiService.getMovimientos(),
@@ -128,15 +124,14 @@ class _InventoryScreenState extends State<InventoryScreen> with SingleTickerProv
           itemCount: movimientos.length,
           itemBuilder: (context, index) {
             final mov = movimientos[index];
-            
-            // Determinar si es Entrada o Salida para los colores
-            // Comparamos en minúsculas para evitar errores
+
+            //determinar si es Entrada o Salida
             bool esEntrada = mov.tipo.toLowerCase() == 'entrada';
-            
-            // Formato simple de fecha (Cortamos el string ISO)
-            // "2025-11-23T05:00:40..." -> "2025-11-23"
-            String fechaCorta = mov.fecha.length > 10 
-                ? mov.fecha.substring(0, 10) 
+
+            //formato simple de fecha
+            //"2025-11-23T05:00:40..." -> "2025-11-23"
+            String fechaCorta = mov.fecha.length > 10
+                ? mov.fecha.substring(0, 10)
                 : mov.fecha;
 
             return Card(
@@ -149,7 +144,7 @@ class _InventoryScreenState extends State<InventoryScreen> with SingleTickerProv
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    esEntrada ? Icons.download : Icons.upload, // Flecha abajo (entra), Flecha arriba (sale)
+                    esEntrada ? Icons.download : Icons.upload,
                     color: esEntrada ? Colors.green.shade800 : Colors.red.shade800,
                   ),
                 ),
@@ -177,6 +172,50 @@ class _InventoryScreenState extends State<InventoryScreen> with SingleTickerProv
                       ),
                     ),
                   ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildCategoriasTab() {
+    return FutureBuilder<List<Categoria>>(
+      future: _apiService.getCategorias(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error al cargar categorías'));
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Center(child: Text('No hay categorías registradas'));
+        }
+
+        final categorias = snapshot.data!;
+        final colorFondo = Colors.blue.shade100;
+        final colorIcono = Colors.blue.shade800;
+
+        return ListView.builder(
+          padding: EdgeInsets.all(8),
+          itemCount: categorias.length,
+          itemBuilder: (context, index) {
+            final cat = categorias[index];
+
+            return Card(
+              elevation: 2,
+              margin: EdgeInsets.symmetric(vertical: 5),
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: colorFondo,
+                  child: Icon(Icons.category, color: colorIcono),
+                ),
+                title: Text(
+                  cat.nombre,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
               ),
             );

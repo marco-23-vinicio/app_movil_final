@@ -4,10 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 
 class ApiService {
-  // CAMBIO IMPORTANTE: Usar HTTPS
   static const String baseUrl = 'https://gestiondervini-production.up.railway.app/api';
 
-  // --- LOGIN ---
+  //login
   Future<Map<String, dynamic>> login(String username, String password) async {
     try {
       final url = Uri.parse('$baseUrl/login/');
@@ -37,7 +36,6 @@ class ApiService {
         
         return {'success': true, 'data': body};
       } else {
-        // Intenta decodificar el error, si falla usa uno genérico
         try {
             final body = jsonDecode(utf8.decode(response.bodyBytes));
             return {'success': false, 'error': body['error'] ?? 'Credenciales inválidas'};
@@ -51,10 +49,22 @@ class ApiService {
     }
   }
 
-  // --- GET DATA ---
+  //metodo generico para GET con token
   Future<List<dynamic>> _get(String endpoint) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/$endpoint'));
+      // Obtener token de SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token') ?? '';
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/$endpoint'),
+        headers: {
+          'Authorization': 'Token $token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      );
+
       if (response.statusCode == 200) {
         return jsonDecode(utf8.decode(response.bodyBytes));
       } else {
@@ -67,7 +77,7 @@ class ApiService {
     }
   }
 
-  // Métodos de lectura
+  //metodos de lectura
   Future<List<Cliente>> getClientes() async {
     final data = await _get('clientes/');
     return data.map((json) => Cliente.fromJson(json)).toList();
@@ -91,5 +101,15 @@ class ApiService {
   Future<List<MovimientoInventario>> getMovimientos() async {
     final data = await _get('movimientos/');
     return data.map((json) => MovimientoInventario.fromJson(json)).toList();
+  }
+
+  Future<List<Proveedor>> getProveedores() async {
+    final data = await _get('proveedores/');
+    return data.map((json) => Proveedor.fromJson(json)).toList();
+  }
+
+  Future<List<Categoria>> getCategorias() async {
+    final data = await _get('categorias/');
+    return data.map((json) => Categoria.fromJson(json)).toList();
   }
 }

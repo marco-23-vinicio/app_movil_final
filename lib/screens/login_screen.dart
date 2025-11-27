@@ -1,4 +1,3 @@
-// lib/screens/login_screen.dart
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'home_screen.dart';
@@ -15,8 +14,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   void _login() async {
-    // Cerrar teclado para ver mejor la UI
-    FocusScope.of(context).unfocus();
+    FocusScope.of(context).unfocus(); //cerrar teclado
 
     if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -27,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
 
-    // Llamada al servicio
+    //llamar al servicio de la api para login
     final result = await _apiService.login(
       _usernameController.text.trim(),
       _passwordController.text.trim(),
@@ -36,13 +34,13 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = false);
 
     if (result['success']) {
-      // Login exitoso
+      final username = result['data']['username'] ?? '';
+      final email = result['data']['email'] ?? '';
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => HomeScreen()),
+        MaterialPageRoute(builder: (_) => HomeScreen(username: username, email: email)),
       );
     } else {
-      // Login fallido - Muestra el error exacto
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
