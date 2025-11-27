@@ -158,3 +158,46 @@ class MovimientoInventario {
     );
   }
 }
+
+class Proveedor {
+  final int id;
+  final String empresa;
+  final String contacto;
+  final String telefono;
+  final String direccion;
+
+  Proveedor({
+    required this.id,
+    required this.empresa,
+    required this.contacto,
+    required this.telefono,
+    required this.direccion,
+  });
+
+  factory Proveedor.fromJson(Map<String, dynamic> json) {
+    return Proveedor(
+      id: json['id'],
+      empresa: json['empresa'],
+      contacto: json['contacto'],
+      telefono: json['telefono'],
+      direccion: json['direccion'],
+    );
+  }
+}
+
+class Categoria {
+  final int id;
+  final String nombre;
+
+  Categoria({
+    required this.id,
+    required this.nombre,
+  });
+
+  factory Categoria.fromJson(Map<String, dynamic> json) {
+    return Categoria(
+      id: json['id'],
+      nombre: json['nombre'],
+    );
+  }
+}
