@@ -125,11 +125,6 @@ class HomeScreen extends StatelessWidget {
           final totalVentas = ventasCompletadas.fold<double>(0.0, (s, p) => s + (p.total));
           final pedidosCount = ventasCompletadas.length;
           final clientesCount = clientes.length;
-
-          //ultimos montos para gráfica (solo completados)
-          final recentAmounts = ventasCompletadas.reversed.take(8).map((p) => p.total).toList();
-          final maxAmount = (recentAmounts.isEmpty) ? 1.0 : recentAmounts.reduce((a, b) => a > b ? a : b);
-
           final latestOrders = ventasCompletadas.reversed.take(5).toList();
 
           return Padding(
