@@ -10,11 +10,23 @@ class InventoryScreen extends StatefulWidget {
 class _InventoryScreenState extends State<InventoryScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final ApiService _apiService = ApiService();
+  late Future<List<Producto>> _productosFuture;
+  late Future<List<MovimientoInventario>> _movimientosFuture;
+  late Future<List<Categoria>> _categoriasFuture;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this); //inicializar para 3 pestanias
+    _refreshData();
+  }
+
+  void _refreshData() {
+    setState(() {
+      _productosFuture = _apiService.getProductos();
+      _movimientosFuture = _apiService.getMovimientos();
+      _categoriasFuture = _apiService.getCategorias();
+    });
   }
 
   @override
@@ -36,6 +48,12 @@ class _InventoryScreenState extends State<InventoryScreen> with SingleTickerProv
             Tab(icon: Icon(Icons.category), text: 'Categorías'),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: _refreshData,
+          ),
+        ],
       ),
       body: TabBarView(
         controller: _tabController,
@@ -51,7 +69,7 @@ class _InventoryScreenState extends State<InventoryScreen> with SingleTickerProv
 
   Widget _buildProductosTab() {
     return FutureBuilder<List<Producto>>(
-      future: _apiService.getProductos(),
+      future: _productosFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
@@ -103,7 +121,7 @@ class _InventoryScreenState extends State<InventoryScreen> with SingleTickerProv
 
   Widget _buildMovimientosTab() {
     return FutureBuilder<List<MovimientoInventario>>(
-      future: _apiService.getMovimientos(),
+      future: _movimientosFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
@@ -183,7 +201,7 @@ class _InventoryScreenState extends State<InventoryScreen> with SingleTickerProv
 
   Widget _buildCategoriasTab() {
     return FutureBuilder<List<Categoria>>(
-      future: _apiService.getCategorias(),
+      future: _categoriasFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());

@@ -13,11 +13,21 @@ class _SalesScreenState extends State<SalesScreen>
   late TabController _tabController;
   final _apiService = ApiService();
   String _filter = 'Todos';
+  late Future<List<Pedido>> _ventasFuture;
+  late Future<List<Cliente>> _clientesFuture;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _refreshData();
+  }
+
+  void _refreshData() {
+    setState(() {
+      _ventasFuture = _apiService.getVentas();
+      _clientesFuture = _apiService.getClientes();
+    });
   }
 
   @override
@@ -32,6 +42,12 @@ class _SalesScreenState extends State<SalesScreen>
             Tab(text: 'Clientes'),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: _refreshData,
+          ),
+        ],
       ),
       body: TabBarView(
         controller: _tabController,
@@ -52,7 +68,7 @@ class _SalesScreenState extends State<SalesScreen>
               ),
               Expanded(
                 child: FutureBuilder<List<Pedido>>(
-                  future: _apiService.getVentas(),
+                  future: _ventasFuture,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting)
                       return Center(child: CircularProgressIndicator());
@@ -116,7 +132,7 @@ class _SalesScreenState extends State<SalesScreen>
           ),
           //pestania de clientes
           FutureBuilder<List<Cliente>>(
-            future: _apiService.getClientes(),
+            future: _clientesFuture,
             builder: (context, snapshot) {
               if (!snapshot.hasData)
                 return Center(child: CircularProgressIndicator());

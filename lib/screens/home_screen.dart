@@ -6,14 +6,32 @@ import 'purchases_screen.dart';
 import 'inventory_screen.dart';
 import 'login_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final String username;
   final String email;
 
   HomeScreen({required this.username, required this.email});
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late Future<List<dynamic>> _dataFuture;
   final _apiService = ApiService();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _dataFuture = Future.wait([_apiService.getVentas(), _apiService.getClientes()]);
+  }
+
+  void _refreshData() {
+    setState(() {
+      _dataFuture = Future.wait([_apiService.getVentas(), _apiService.getClientes()]);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,12 +40,19 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Dashboard Principal'),
         //se mantiene esto para evitar que cambie el icono del hamburguer
-        automaticallyImplyLeading: false, 
+        automaticallyImplyLeading: false,
         //botón en el AppBar para abrir el Drawer o sidebar
         leading: IconButton(
           icon: Icon(Icons.menu),
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
+        //botón para refrescar datos
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: _refreshData,
+          ),
+        ],
       ),
       drawer: Drawer(
         child: ListView(
@@ -51,12 +76,12 @@ class HomeScreen extends StatelessWidget {
                       ),
                       
                       const SizedBox(height: 16),
-                      
+
                       //informacion del usuario
                       const CircleAvatar(child: Icon(Icons.person)),
                       const SizedBox(height: 8),
-                      Text(username, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                      Text(email, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+                      Text(widget.username, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text(widget.email, style: const TextStyle(color: Colors.white70, fontSize: 14)),
                     ],
                   ),
                 ),
@@ -107,7 +132,7 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       body: FutureBuilder<List<dynamic>>(
-        future: Future.wait([_apiService.getVentas(), _apiService.getClientes()]),
+        future: _dataFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting)
             return const Center(child: CircularProgressIndicator());

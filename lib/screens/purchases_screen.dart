@@ -12,11 +12,21 @@ class _PurchasesScreenState extends State<PurchasesScreen> with SingleTickerProv
   late TabController _tabController;
   final _apiService = ApiService();
   String _filter = 'Todos';
+  late Future<List<OrdenCompra>> _comprasFuture;
+  late Future<List<Proveedor>> _proveedoresFuture;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this); //inicializar para 2 pestanias
+    _refreshData();
+  }
+
+  void _refreshData() {
+    setState(() {
+      _comprasFuture = _apiService.getCompras();
+      _proveedoresFuture = _apiService.getProveedores();
+    });
   }
 
   @override
@@ -37,6 +47,12 @@ class _PurchasesScreenState extends State<PurchasesScreen> with SingleTickerProv
             Tab(icon: Icon(Icons.business), text: 'Proveedores'),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: _refreshData,
+          ),
+        ],
       ),
       body: TabBarView(
         controller: _tabController,
@@ -68,7 +84,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> with SingleTickerProv
         ),
         Expanded(
           child: FutureBuilder<List<OrdenCompra>>(
-            future: _apiService.getCompras(),
+            future: _comprasFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting)
                 return Center(child: CircularProgressIndicator());
@@ -134,7 +150,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> with SingleTickerProv
 
   Widget _buildProveedoresTab() {
     return FutureBuilder<List<Proveedor>>(
-      future: _apiService.getProveedores(),
+      future: _proveedoresFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
